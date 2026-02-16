@@ -1,0 +1,24 @@
+﻿[package]
+name = "retasync_control_plane"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+chrono.workspace = true
+futures.workspace = true
+http.workspace = true
+retasync_contract = { path = "../retasync_contract" }
+retasync_mesh_bridge = { path = "../retasync_mesh_bridge" }
+retasync_storage = { path = "../retasync_storage" }
+retasync_transfer = { path = "../retasync_transfer" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tokio-stream = { workspace = true, features = ["sync"] }
+tracing.workspace = true
+uuid.workspace = true

@@ -1,0 +1,13 @@
+﻿[package]
+name = "emergency_crud"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+chrono.workspace = true
+retasync_contract = { path = "../../crates/retasync_contract" }
+serde_json.workspace = true
+uuid.workspace = true

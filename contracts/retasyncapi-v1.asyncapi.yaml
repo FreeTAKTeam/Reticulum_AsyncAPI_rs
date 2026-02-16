@@ -1,0 +1,383 @@
+﻿asyncapi: "3.0.0"
+info:
+  title: Reticulum AsyncAPI Contract
+  version: "1.0.0"
+  description: >-
+    Authoritative mesh data-plane contract for Reticulum_AsyncAPI_rs. Commands,
+    results, events, and transfer lifecycle messages are transported as canonical
+    MessagePack envelopes over Reticulum/LXMF.
+  contact:
+    name: FreeTAKTeam
+    url: https://github.com/FreeTAKTeam
+    email: FreeTAKTeam@gmail.com
+  license:
+    name: EPL-2.0
+    url: https://www.eclipse.org/legal/epl-2.0/
+defaultContentType: application/msgpack
+servers:
+  reticulum-link:
+    host: mesh
+    protocol: reticulum
+    description: Direct link transport (preferred where available).
+  lxmf:
+    host: mesh
+    protocol: lxmf
+    description: Store-and-forward transport fallback.
+channels:
+  commandChannel:
+    address: commands/{operation}
+    description: Command operation requests entering the mesh.
+    messages:
+      commandEnvelope:
+        $ref: '#/components/messages/MeshCommand'
+  resultChannel:
+    address: results/{operation}
+    description: Correlated command result envelopes emitted from mesh processing.
+    messages:
+      resultEnvelope:
+        $ref: '#/components/messages/MeshResult'
+  eventChannel:
+    address: events/{event}
+    description: Published domain events and transfer progress events.
+    messages:
+      eventEnvelope:
+        $ref: '#/components/messages/MeshEvent'
+  transferChannel:
+    address: transfers/{operation}
+    description: Transfer initiation and completion envelopes.
+    messages:
+      transferEnvelope:
+        $ref: '#/components/messages/MeshTransfer'
+operations:
+  sendCommand:
+    action: send
+    channel:
+      $ref: '#/channels/commandChannel'
+    messages:
+      - $ref: '#/channels/commandChannel/messages/commandEnvelope'
+  receiveResult:
+    action: receive
+    channel:
+      $ref: '#/channels/resultChannel'
+    messages:
+      - $ref: '#/channels/resultChannel/messages/resultEnvelope'
+  receiveEvent:
+    action: receive
+    channel:
+      $ref: '#/channels/eventChannel'
+    messages:
+      - $ref: '#/channels/eventChannel/messages/eventEnvelope'
+  sendTransfer:
+    action: send
+    channel:
+      $ref: '#/channels/transferChannel'
+    messages:
+      - $ref: '#/channels/transferChannel/messages/transferEnvelope'
+components:
+  messages:
+    MeshCommand:
+      name: MeshCommand
+      title: Mesh Command Envelope
+      contentType: application/msgpack
+      payload:
+        $ref: '#/components/schemas/MeshCommandEnvelope'
+    MeshResult:
+      name: MeshResult
+      title: Mesh Result Envelope
+      contentType: application/msgpack
+      payload:
+        $ref: '#/components/schemas/MeshResultEnvelope'
+    MeshEvent:
+      name: MeshEvent
+      title: Mesh Event Envelope
+      contentType: application/msgpack
+      payload:
+        $ref: '#/components/schemas/MeshEventEnvelope'
+    MeshTransfer:
+      name: MeshTransfer
+      title: Mesh Transfer Envelope
+      contentType: application/msgpack
+      payload:
+        $ref: '#/components/schemas/MeshTransferEnvelope'
+  schemas:
+    MeshCommandEnvelope:
+      type: object
+      required:
+        - message_id
+        - operation
+        - sent_at
+        - source_identity
+        - destination_identity
+        - content_type
+        - payload
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          description: UUIDv7 identifier.
+        operation:
+          type: string
+          description: Namespaced snake_case command operation.
+        sent_at:
+          type: string
+          format: date-time
+        source_identity:
+          type: string
+        destination_identity:
+          type: string
+        content_type:
+          type: string
+          const: application/msgpack
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/EmergencyActionMessage'
+            - $ref: '#/components/schemas/Event'
+            - $ref: '#/components/schemas/TransferUploadRequest'
+            - type: object
+        ttl_ms:
+          type: integer
+          minimum: 1
+        transport_hint:
+          type: string
+          enum: [link, lxmf]
+    MeshResultEnvelope:
+      type: object
+      required:
+        - message_id
+        - correlation_id
+        - operation
+        - sent_at
+        - source_identity
+        - destination_identity
+        - content_type
+        - payload
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        operation:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        source_identity:
+          type: string
+        destination_identity:
+          type: string
+        content_type:
+          type: string
+          const: application/msgpack
+        payload:
+          type: object
+        ttl_ms:
+          type: integer
+          minimum: 1
+        transport_hint:
+          type: string
+          enum: [link, lxmf]
+    MeshEventEnvelope:
+      type: object
+      required:
+        - message_id
+        - event
+        - sent_at
+        - source_identity
+        - destination_identity
+        - content_type
+        - payload
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        event:
+          type: string
+          description: Namespaced snake_case event name.
+        sent_at:
+          type: string
+          format: date-time
+        source_identity:
+          type: string
+        destination_identity:
+          type: string
+        content_type:
+          type: string
+          const: application/msgpack
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/EmergencyActionMessage'
+            - $ref: '#/components/schemas/Event'
+            - $ref: '#/components/schemas/TransferProgress'
+            - type: object
+        ttl_ms:
+          type: integer
+          minimum: 1
+        transport_hint:
+          type: string
+          enum: [link, lxmf]
+    MeshTransferEnvelope:
+      type: object
+      required:
+        - message_id
+        - operation
+        - sent_at
+        - source_identity
+        - destination_identity
+        - content_type
+        - direction
+        - payload
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        operation:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        source_identity:
+          type: string
+        destination_identity:
+          type: string
+        content_type:
+          type: string
+          const: application/msgpack
+        direction:
+          type: string
+          enum: [upload, download]
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/TransferUploadRequest'
+            - $ref: '#/components/schemas/TransferCompletion'
+            - type: object
+        ttl_ms:
+          type: integer
+          minimum: 1
+        transport_hint:
+          type: string
+          enum: [link, lxmf]
+    EmergencyActionMessage:
+      type: object
+      required:
+        - callsign
+      properties:
+        callsign:
+          type: string
+        groupName:
+          type: string
+        commsMethod:
+          type: string
+        medicalStatus:
+          type: string
+        commsStatus:
+          type: string
+        preparednessStatus:
+          type: string
+        mobilityStatus:
+          type: string
+        securityCapability:
+          type: string
+        personnelStatus:
+          type: string
+        summary:
+          type: string
+    Event:
+      type: object
+      required:
+        - uid
+      properties:
+        uid:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        eventType:
+          type: string
+        location:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    TransferUploadRequest:
+      type: object
+      required:
+        - destination_identity
+        - file_name
+        - media_type
+        - payload_base64
+      properties:
+        destination_identity:
+          type: string
+        file_name:
+          type: string
+        media_type:
+          type: string
+        payload_base64:
+          type: string
+          format: byte
+    TransferProgress:
+      type: object
+      required:
+        - transfer_id
+        - status
+      properties:
+        transfer_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, success, failed]
+        bytes_sent:
+          type: integer
+          minimum: 0
+        bytes_total:
+          type: integer
+          minimum: 0
+        reason:
+          type: string
+    TransferCompletion:
+      type: object
+      required:
+        - transfer_id
+        - status
+      properties:
+        transfer_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [success, failed]
+        checksum_sha256:
+          type: string
+        reason:
+          type: string
+x-retasync:
+  operations:
+    commands:
+      - emergency_action_message.create
+      - emergency_action_message.list
+      - emergency_action_message.put
+      - emergency_action_message.retrieve
+      - emergency_action_message.delete
+      - event.create
+      - event.list
+      - event.put
+      - event.retrieve
+      - event.delete
+      - transfer.upload
+    events:
+      - emergency_action_message.created
+      - emergency_action_message.updated
+      - emergency_action_message.deleted
+      - event.created
+      - event.updated
+      - event.deleted
+      - transfer.progress
+      - transfer.completed
+      - transfer.failed

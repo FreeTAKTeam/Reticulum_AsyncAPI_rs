@@ -1,0 +1,15 @@
+﻿[rpc]
+endpoint = "tcp://127.0.0.1:31337"
+
+[http]
+bind = "127.0.0.1:8080"
+# auth_token = "replace-me-for-non-loopback-binds"
+
+[storage]
+sqlite_path = "retasync.sqlite"
+
+[acl]
+mode = "allowlist"
+
+[transport]
+prefer_link = true

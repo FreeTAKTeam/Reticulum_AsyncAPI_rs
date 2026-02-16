@@ -1,0 +1,44 @@
+﻿[workspace]
+members = [
+  "crates/retasync_contract",
+  "crates/retasync_codegen",
+  "crates/retasync_mesh_bridge",
+  "crates/retasync_control_plane",
+  "crates/retasync_storage",
+  "crates/retasync_transfer",
+  "crates/retasync_cli",
+  "tools/retasync-convert",
+  "xtask",
+  "examples/emergency_crud"
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "EPL-2.0"
+authors = ["FreeTAKTeam"]
+repository = "https://github.com/FreeTAKTeam/Reticulum_AsyncAPI_rs"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+axum = { version = "0.8", features = ["macros"] }
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4", features = ["derive"] }
+futures = "0.3"
+http = "1"
+mime = "0.3"
+rmp-serde = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio-rustls", "chrono", "uuid", "macros"] }
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "sync", "time", "signal"] }
+tokio-stream = "0.1"
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+uuid = { version = "1", features = ["serde", "v7"] }

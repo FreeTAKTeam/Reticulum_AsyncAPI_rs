@@ -1,0 +1,11 @@
+﻿[package]
+name = "xtask"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+retasync_codegen = { path = "../crates/retasync_codegen" }
